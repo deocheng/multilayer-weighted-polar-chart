@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+
+# Local outputs (keep committed demo asset)
+output.png
