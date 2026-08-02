@@ -51,8 +51,8 @@ CLUTCH_EDGE = "#854d0e"
 # Makes (命中数) dimension — green
 MAKE_COLOR = "#4ade80"
 GAP_COLOR = "#0b1120"
-RING_BG = "#0c1424"          # unified sector background (no per-sector color difference)
-BG_COLOR = "#080e1a"
+RING_BG = "#ffffff"          # unified sector background (white)
+BG_COLOR = "#ffffff"
 
 PLAYER_SECTOR_DEG = 45.0      # each player sector angle
 INTER_PLAYER_GAP_DEG = 5.0    # gap between player sectors
@@ -252,7 +252,7 @@ def render(season: int, team: str, top_n: int = 5) -> str:
         f'style="background:{BG_COLOR};font-family:system-ui,-apple-system,sans-serif;">',
         '<defs>',
         f'<radialGradient id="bgGrad" cx="{cx}" cy="{cy}" r="{outer_radius}" gradientUnits="userSpaceOnUse">',
-        '<stop offset="0%" stop-color="#0f172a"/><stop offset="70%" stop-color="#080e1a"/><stop offset="100%" stop-color="#020617"/>',
+        '<stop offset="0%" stop-color="#ffffff"/><stop offset="70%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ffffff"/>',
         '</radialGradient>',
         '</defs>',
     ]
@@ -260,13 +260,13 @@ def render(season: int, team: str, top_n: int = 5) -> str:
     # Header
     bench_total = bench_sector.total if bench_sector else 0
     bench_pct = (bench_total / team_total * 100) if team_total else 0
-    parts.append(f'<text x="{cx}" y="50" text-anchor="middle" fill="#f1f5f9" font-size="23" font-weight="700">{team} · 球队出手分布 — {season}</text>')
+    parts.append(f'<text x="{cx}" y="50" text-anchor="middle" fill="#0f172a" font-size="23" font-weight="700">{team} · 球队出手分布 — {season}</text>')
     subtitle = f"固定 {int(PLAYER_SECTOR_DEG)}° 扇形 · 边线左对齐 · {int(math.degrees(gap_width))}° 留白 · 白字=命中数/出手数 · 黄字=关键时刻 · 总出手 {team_total}"
     if bench_total:
         subtitle += f" · 替补/其他人: {bench_total} ({bench_pct:.1f}%)"
-    parts.append(f'<text x="{cx}" y="78" text-anchor="middle" fill="#94a3b8" font-size="13">{subtitle}</text>')
+    parts.append(f'<text x="{cx}" y="78" text-anchor="middle" fill="#475569" font-size="13">{subtitle}</text>')
 
-    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{outer_radius}" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2"/>')
+    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{outer_radius}" fill="url(#bgGrad)" stroke="none"/>')
 
     # Unified ring background across the whole data span (no color difference
     # between player sectors and the 12 o'clock gap — both share RING_BG).
@@ -300,7 +300,7 @@ def render(season: int, team: str, top_n: int = 5) -> str:
             thickness = r_next - r
             if seg.attempts == 0:
                 path = annular_sector_path(cx, cy, r, r_next, start_svg, end_svg)
-                parts.append(f'<path d="{path}" fill="{RING_BG}" stroke="#1e293b" stroke-width="1"/>')
+                parts.append(f'<path d="{path}" fill="{RING_BG}" stroke="#e2e8f0" stroke-width="1"/>')
                 # Consistency label on the empty ring slot
                 mx, my = polar_to_cartesian(cx, cy, r + thickness / 2, mid_svg)
                 parts.append(f'<text x="{mx:.1f}" y="{my + 3:.1f}" text-anchor="middle" fill="#475569" font-size="9.5" paint-order="stroke" stroke="#020617" stroke-width="2.5">0/0</text>')
@@ -353,8 +353,8 @@ def render(season: int, team: str, top_n: int = 5) -> str:
         x, y = spec["x"], spec["y"]
         anchor = "end" if x < cx - 20 else ("start" if x > cx + 20 else "middle")
         tx = x - 12 if anchor == "end" else (x + 12 if anchor == "start" else x)
-        parts.append(f'<text x="{tx:.1f}" y="{y + 1:.1f}" text-anchor="{anchor}" fill="#f8fafc" font-size="13.5" font-weight="700" paint-order="stroke" stroke="#020617" stroke-width="3.5">{spec["line1"]}</text>')
-        parts.append(f'<text x="{tx:.1f}" y="{y + 18:.1f}" text-anchor="{anchor}" fill="#cbd5e1" font-size="11" paint-order="stroke" stroke="#020617" stroke-width="3">总出手 {spec["line2"]}</text>')
+        parts.append(f'<text x="{tx:.1f}" y="{y + 1:.1f}" text-anchor="{anchor}" fill="#0f172a" font-size="13.5" font-weight="700" paint-order="stroke" stroke="#ffffff" stroke-width="3.5">{spec["line1"]}</text>')
+        parts.append(f'<text x="{tx:.1f}" y="{y + 18:.1f}" text-anchor="{anchor}" fill="#475569" font-size="11" paint-order="stroke" stroke="#ffffff" stroke-width="3">总出手 {spec["line2"]}</text>')
 
     # Distance ring labels (vertical, left side of the 12 o'clock axis)
     label_x = cx - 12
@@ -362,15 +362,15 @@ def render(season: int, team: str, top_n: int = 5) -> str:
     for (name, _, _), th in zip(reversed(DIST_BUCKETS), reversed(ring_thicknesses)):
         r_mid = r_pos - th / 2
         y = cy - r_mid
-        parts.append(f'<text x="{label_x:.1f}" y="{y:.1f}" text-anchor="end" dominant-baseline="middle" fill="#f1f5f9" font-size="12" font-weight="600">{name}</text>')
+        parts.append(f'<text x="{label_x:.1f}" y="{y:.1f}" text-anchor="end" dominant-baseline="middle" fill="#0f172a" font-size="12" font-weight="600">{name}</text>')
         r_pos -= th
 
     # Center: single merged player-data block (ranking + per-distance), centred
     # in the hole — combines the former centre "出手排名" and gap "球员数据".
     parts.append(f'<circle cx="{cx}" cy="{cy}" r="{inner_radius}" fill="{BG_COLOR}"/>')
-    parts.append(f'<text x="{cx}" y="{cy - 82:.1f}" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="800" paint-order="stroke" stroke="#020617" stroke-width="3.5">球员出手数据</text>')
-    parts.append(f'<text x="{cx}" y="{cy - 60:.1f}" text-anchor="middle" fill="#64748b" font-size="9">总·命中率　　篮/中/长/3分</text>')
-    ry = cy - 41
+    parts.append(f'<text x="{cx}" y="{cy - 54:.1f}" text-anchor="middle" fill="#0f172a" font-size="13" font-weight="800" paint-order="stroke" stroke="#ffffff" stroke-width="3.5">球员出手数据</text>')
+    parts.append(f'<text x="{cx}" y="{cy - 32:.1f}" text-anchor="middle" fill="#475569" font-size="9">总·命中率　　篮/中/长/3分</text>')
+    ry = cy - 13
     rlh = 17
     for i, sec in enumerate(top_sectors):
         a = [s.attempts for s in sec.segments]
@@ -378,7 +378,7 @@ def render(season: int, team: str, top_n: int = 5) -> str:
         fg = (tot_mk / sec.total * 100) if sec.total else 0.0
         nm = sec.name.replace(". ", ".")
         line = f"{i+1} {nm} {sec.total}·{fg:.0f}%  {a[0]}/{a[1]}/{a[2]}/{a[3]}"
-        parts.append(f'<text x="{cx:.1f}" y="{ry + i * rlh:.1f}" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="600" paint-order="stroke" stroke="#020617" stroke-width="2.5">{line}</text>')
+        parts.append(f'<text x="{cx:.1f}" y="{ry + i * rlh:.1f}" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="600" paint-order="stroke" stroke="#ffffff" stroke-width="2.5">{line}</text>')
 
     # Legend strip — plain text sunk into the background below the chart (no card)
     legend = [
@@ -393,9 +393,9 @@ def render(season: int, team: str, top_n: int = 5) -> str:
     x = cx - total_w / 2
     for color, text in legend:
         parts.append(f'<rect x="{x:.1f}" y="{legend_y - 11:.1f}" width="13" height="13" rx="3" fill="{color}"/>')
-        parts.append(f'<text x="{x + 20:.1f}" y="{legend_y:.1f}" fill="#cbd5e1" font-size="12.5">{text}</text>')
+        parts.append(f'<text x="{x + 20:.1f}" y="{legend_y:.1f}" fill="#334155" font-size="12.5">{text}</text>')
         x += 26 + len(text) * 12 + 24
-    parts.append(f'<text x="{cx}" y="{legend_y + 28:.1f}" text-anchor="middle" fill="#64748b" font-size="11.5">扇形从左边线起向右填充 · 内圈=篮下 外圈=三分 · 环厚=全队该距离带出手占比(真实比例) · 同环宽度=该球员此距离出手÷全队该距离最高者(真实倍数)</text>')
+    parts.append(f'<text x="{cx}" y="{legend_y + 28:.1f}" text-anchor="middle" fill="#475569" font-size="11.5">扇形从左边线起向右填充 · 内圈=篮下 外圈=三分 · 环厚=全队该距离带出手占比(真实比例) · 同环宽度=该球员此距离出手÷全队该距离最高者(真实倍数)</text>')
 
     parts.append("</svg>")
 
@@ -411,14 +411,14 @@ def render(season: int, team: str, top_n: int = 5) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{team} 出手分布 {season}</title>
 <style>
-body {{ margin: 0; background: {BG_COLOR}; color: #e2e8f0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: system-ui, sans-serif; }}
+body {{ margin: 0; background: {BG_COLOR}; color: #0f172a; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: system-ui, sans-serif; }}
 .container {{ width: 98vw; max-width: 1340px; padding: 16px; }}
 .controls {{ margin-bottom: 16px; display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }}
-.controls label {{ font-size: 14px; color: #94a3b8; }}
-.controls input, .controls select {{ background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 4px; padding: 6px 10px; }}
+.controls label {{ font-size: 14px; color: #475569; }}
+.controls input, .controls select {{ background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 10px; }}
 .controls button {{ background: #3b82f6; color: #fff; border: none; border-radius: 4px; padding: 7px 16px; cursor: pointer; font-weight: 600; }}
 .chart {{ border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }}
-.note {{ margin-top: 16px; color: #64748b; font-size: 13px; text-align: center; max-width: 900px; }}
+.note {{ margin-top: 16px; color: #475569; font-size: 13px; text-align: center; max-width: 900px; }}
 </style>
 </head>
 <body>
