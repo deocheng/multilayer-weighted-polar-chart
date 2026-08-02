@@ -20,10 +20,10 @@ def plot_multilayer_polar_map(
     layer_col: str,
     value_col: str,
     weight_col: str,
-    title: str = "Multilayer Weighted Polar Map",
-    center_legend: str = "DATA DRILL-DOWN MAP\n───────\n■ High Weight (Dark)\n■ Low Weight (Light)",
-    cmap_base_colors: list = ["#dbeafe", "#60a5fa", "#1d4ed8"],
-    cmap_sub_colors: list = ["#3b82f6", "#1e3a8a", "#0f172a"],
+    title: str = "Team Shot Map",
+    center_legend: str = "TEAM SHOT MAP\n\n■ High Weight (Dark)\n■ Low Weight (Light)",
+    cmap_base_colors: list = ["#bfdbfe", "#60a5fa", "#3b82f6", "#1d4ed8", "#1e3a8a"],
+    cmap_sub_colors: list = ["#1d4ed8", "#172554", "#0f172a"],
     gap_ratio: float = 0.05,
     figsize: tuple = (10, 10),
     save_path: str = None
@@ -130,10 +130,7 @@ def plot_multilayer_polar_map(
             group_theta_span = theta_end - theta_start
             theta_draw_end = theta_start + group_theta_span * weight
 
-            # 绘制底层网格阴影 (未覆盖部分)
-            if weight < 1.0:
-                theta_gap_grid = np.linspace(theta_draw_end, theta_end, 30)
-                ax.fill_between(theta_gap_grid, r_inner, r_outer, color='#ffffff', alpha=0.03, edgecolor='none')
+            # 未覆盖部分保持深色背景(与参考图一致,不叠加白色网格)
 
             # 绘制真实数据区域
             theta_active_grid = np.linspace(theta_start, theta_draw_end, 50)
@@ -221,7 +218,7 @@ if __name__ == "__main__":
         layer_col='Zone',
         value_col='TotalShots',
         weight_col='Weight',
-        title="Multilayer Weighted Polar Chart Demo",
+        title="Team Shot Map",
         save_path='multilayer_polar_demo.png'
     )
     plt.show()

@@ -1,4 +1,4 @@
-# 🌟 Multilayer Weighted Polar Chart (多层带权极坐标下沉图)
+# 🌟 多层带权极坐标下沉图 (Multilayer Weighted Polar Chart)
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -23,6 +23,14 @@
 ## 📸 效果展示 (Preview)
 
 ![Demo Chart](multilayer_polar_demo.png)
+
+---
+
+## 🎯 参考布局 (Annotated Layout Reference)
+
+以下为「Team Shot Map」主题的对齐示意图,可作为自定义样式与排版的参考:
+
+![Exact User Layout](exact_user_layout.png)
 
 ---
 
