@@ -223,14 +223,25 @@ def render(season: int, team: str, top_n: int = 5) -> str:
     # the proportions are faithful (e.g. rim ~59%, long-mid ~4%). A near-zero
     # floor (4px) only guards against a degenerate zero-width ring.
     MIN_RING_TH = 4.0
+    RING_GAP = 12.0  # px of blank space left BETWEEN concentric distance rings
     zone_vals = [zone_totals.get(name, 0) for name, _, _ in DIST_BUCKETS]
     zone_sum = sum(zone_vals) or 1
+    n_gaps = len(DIST_BUCKETS) - 1
     floor_total = MIN_RING_TH * len(DIST_BUCKETS)
-    remaining = max(player_radial_span - floor_total, 0.0)
+    # Reserve gap space up-front so the rings keep their TRUE proportional
+    # thickness — the gap is extra whitespace, not carved out of a ring.
+    remaining = max(player_radial_span - floor_total - n_gaps * RING_GAP, 0.0)
     ring_thicknesses = [MIN_RING_TH + remaining * (z / zone_sum) for z in zone_vals]
-    ring_bounds = [inner_radius]
-    for th in ring_thicknesses:
-        ring_bounds.append(ring_bounds[-1] + th)
+    # Per-ring inner/outer radii; a RING_GAP of blank space sits between rings.
+    ring_inner: List[float] = []
+    ring_outer: List[float] = []
+    cur = inner_radius
+    for idx, th in enumerate(ring_thicknesses):
+        r0 = cur + (RING_GAP if idx > 0 else 0)
+        r1 = r0 + th
+        ring_inner.append(r0)
+        ring_outer.append(r1)
+        cur = r1
 
     top_sectors = [s for s in sectors if s.name != "Bench / Others"]
     bench_sector = next((s for s in sectors if s.name == "Bench / Others"), None)
@@ -295,12 +306,12 @@ def render(season: int, team: str, top_n: int = 5) -> str:
         mid_svg = ref_to_svg(theta_mid)
 
         for i, seg in enumerate(sec.segments):
-            r = ring_bounds[i]
-            r_next = ring_bounds[i + 1]
+            r = ring_inner[i]
+            r_next = ring_outer[i]
             thickness = r_next - r
             if seg.attempts == 0:
                 path = annular_sector_path(cx, cy, r, r_next, start_svg, end_svg)
-                parts.append(f'<path d="{path}" fill="{RING_BG}" stroke="#e2e8f0" stroke-width="1"/>')
+                parts.append(f'<path d="{path}" fill="{RING_BG}" stroke="none"/>')
                 # Consistency label on the empty ring slot
                 mx, my = polar_to_cartesian(cx, cy, r + thickness / 2, mid_svg)
                 parts.append(f'<text x="{mx:.1f}" y="{my + 3:.1f}" text-anchor="middle" fill="#475569" font-size="9.5" paint-order="stroke" stroke="#020617" stroke-width="2.5">0/0</text>')
@@ -318,15 +329,15 @@ def render(season: int, team: str, top_n: int = 5) -> str:
 
             # Base wedge (total attempts)
             path = annular_sector_path(cx, cy, r, r_next, draw_start_svg, draw_end_svg)
-            parts.append(f'<path d="{path}" fill="{base_color}" stroke="#0f172a" stroke-width="0.5"/>')
+            parts.append(f'<path d="{path}" fill="{base_color}" stroke="none"/>')
 
             # Clutch overlay (yellow, "sinking" dimension) at left edge of the wedge
             if seg.clutch_attempts > 0:
                 clutch_span = draw_span * seg.clutch_share
                 if clutch_span > 1e-4:
                     c_end_svg = ref_to_svg(theta_start + clutch_span)
-                    cpath = annular_sector_path(cx, cy, r + 2, r_next - 2, draw_start_svg, c_end_svg)
-                    parts.append(f'<path d="{cpath}" fill="{CLUTCH_COLOR}" stroke="{CLUTCH_EDGE}" stroke-width="1"/>')
+                    cpath = annular_sector_path(cx, cy, r, r_next, draw_start_svg, c_end_svg)
+                    parts.append(f'<path d="{cpath}" fill="{CLUTCH_COLOR}" stroke="none"/>')
 
             # Data label drawn ON the wedge (after wedge => never occluded),
             # centered on the wedge's angular midpoint.
@@ -363,7 +374,7 @@ def render(season: int, team: str, top_n: int = 5) -> str:
         r_mid = r_pos - th / 2
         y = cy - r_mid
         parts.append(f'<text x="{label_x:.1f}" y="{y:.1f}" text-anchor="end" dominant-baseline="middle" fill="#0f172a" font-size="12" font-weight="600">{name}</text>')
-        r_pos -= th
+        r_pos -= (th + RING_GAP)
 
     # Center: single merged player-data block (ranking + per-distance), centred
     # in the hole — combines the former centre "出手排名" and gap "球员数据".
