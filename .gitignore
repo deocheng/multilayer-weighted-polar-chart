@@ -13,3 +13,10 @@ env/
 
 # Local outputs (keep committed demo asset)
 output.png
+
+# Environment / secrets (never commit DB credentials)
+.env
+.env.*
+
+# Generated HTML output (team_shot_radial.py -> team_shot_radial.html)
+team_shot_radial.html
