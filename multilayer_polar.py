@@ -25,6 +25,7 @@ def plot_multilayer_polar_map(
     cmap_base_colors: list = ["#bfdbfe", "#60a5fa", "#3b82f6", "#1d4ed8", "#1e3a8a"],
     cmap_sub_colors: list = ["#1d4ed8", "#172554", "#0f172a"],
     gap_ratio: float = 0.05,
+    align_mode: str = "left",
     figsize: tuple = (10, 10),
     save_path: str = None
 ):
@@ -53,6 +54,8 @@ def plot_multilayer_polar_map(
         子/关键区域颜色的渐变色板 (低权重 -> 高权重)
     gap_ratio : float
         11点钟留白缺口占全圆的比例
+    align_mode : str
+        数据弧在扇区内的对齐方式: "left"(从扇区左侧开始,默认) 或 "center"(沿扇区中心线对称展开)
     figsize : tuple
         画布尺寸
     save_path : str, optional
@@ -128,12 +131,18 @@ def plot_multilayer_polar_map(
             
             # 计算弧长覆盖
             group_theta_span = theta_end - theta_start
-            theta_draw_end = theta_start + group_theta_span * weight
+            draw_span = group_theta_span * weight
+            if align_mode == "center":
+                theta_draw_start = theta_mid - (draw_span / 2)
+                theta_draw_end = theta_mid + (draw_span / 2)
+            else:
+                theta_draw_start = theta_start
+                theta_draw_end = theta_start + draw_span
 
             # 未覆盖部分保持深色背景(与参考图一致,不叠加白色网格)
 
             # 绘制真实数据区域
-            theta_active_grid = np.linspace(theta_start, theta_draw_end, 50)
+            theta_active_grid = np.linspace(theta_draw_start, theta_draw_end, 50)
             base_color = cmap_base(weight)
             ax.fill_between(theta_active_grid, r_inner, r_outer, color=base_color, alpha=0.9, edgecolor='#ffffff', lw=0.3)
 
@@ -211,14 +220,16 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(demo_data)
 
-    # 调用绘图工具
+    # 调用绘图工具(居中对齐示例)
     plot_multilayer_polar_map(
         df=df,
         group_col='Player',
         layer_col='Zone',
         value_col='TotalShots',
         weight_col='Weight',
-        title="Team Shot Map",
+        title="Center-Aligned (Symmetric Wings) Multilayer Polar Chart",
+        center_legend="TEAM SHOT MAP\n\n■ High Weight (Dark)\n■ Low Weight (Light)\n(Centered Alignment)",
+        align_mode='center',
         save_path='multilayer_polar_demo.png'
     )
     plt.show()

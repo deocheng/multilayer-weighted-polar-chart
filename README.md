@@ -17,6 +17,7 @@
   - 扇形填充弧长代表完成度/覆盖率；
   - 色彩深度（深蓝 $\rightarrow$ 淡冰蓝）直接映射权重大小（如命中率、ROI、健康度），擅长/高权重项一眼可知。
 - **无框垂直对齐图例（Clean Vertical Axis Legend）**：图示文字优雅对齐于 12 点钟垂直分割线左侧，告别笨重的图例方框，极具科技感。
+- **可切换对齐方式（Left / Center）**：支持从扇区左侧填充（`"left"`），或沿扇区中心线对称展开为「翅膀」布局（`"center"`）。
 
 ---
 
@@ -40,3 +41,6 @@
 
 ```bash
 pip install matplotlib numpy pandas
+```
+
+> 💡 绘图时传入 `align_mode='center'` 即可启用「对称翅膀」居中对齐；不传时默认 `"left"`。

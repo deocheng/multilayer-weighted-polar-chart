@@ -12,6 +12,7 @@ plot_multilayer_polar_map(
     layer_col='Zone',          # 内部圈层
     value_col='TotalShots',    # 主体占比数值
     weight_col='Weight',       # 颜色/弧长权重 (0.0~1.0)
+    align_mode='center',       # "left" 或 "center"(对称翅膀居中对齐)
     title="Team Performance Drill-down Map",
     save_path="output.png"
 )
