@@ -7,6 +7,8 @@
 
 传统柱状图或折线图在表达“宏观主体占比”、“中观维度下沉”和“微观质量/权重”时往往需要拆分多图。本项目通过极坐标下沉结构，在一张圆图内完美融合了**横向关联**与**纵向深度**。
 
+本仓库同时收录基于该主题的 NBA 实战模板族 **「星环图 (Stellar-Ring Chart)」**（`team_shot_radial.py` + `star-templates/`），直连数据库生成可交互 SVG/HTML 投篮分布图。
+
 ---
 
 ## ✨ 核心特性 (Key Features)
@@ -47,25 +49,41 @@ pip install matplotlib numpy pandas
 
 ---
 
-## 🏀 真实应用实例：Team Shot Radial (`team_shot_radial.py`)
+## 🏀 星环图模板族 (Stellar-Ring Chart)
 
-`team_shot_radial.py` 是本图表主题的一个**端到端真实应用**：直连 NBA 出手数据库，生成可交互的纯 SVG/HTML 投篮分布图（无需 matplotlib）。它与通用库 `multilayer_polar.py` 是同一「多层带权极坐标下沉图」主题的两条实现路线：
+`team_shot_radial.py` 与 `star-templates/` 是本图表主题的**端到端真实应用**：直连 NBA 出手数据库，生成可交互的纯 SVG/HTML 投篮分布图（无需 matplotlib）。它与通用库 `multilayer_polar.py` 是同一「极坐标下沉图」主题的两条实现路线：
 
-| 维度 | `multilayer_polar.py`（通用库） | `team_shot_radial.py`（真实应用） |
+| 维度 | `multilayer_polar.py`（通用库） | 星环图家族（Stellar-Ring） |
 | --- | --- | --- |
 | 数据来源 | 传入 pandas `DataFrame` | 直连 PostgreSQL（`fct_pbp_shots`） |
 | 渲染方式 | matplotlib → PNG | 纯 SVG → HTML（自带交互控件） |
-| 对齐方式 | `left` / `center` 可选 | 固定扇形、左侧线对齐（left-edge） |
-| 维度表达 | 权重着色 + 弧长 | 权重着色 + 弧长 + **clutch 关键时刻黄色叠加** + **环上命中/出手数据标签** |
+| 对齐方式 | `left` / `center` 可选 | 全局动态角度比例（按出手量分配扇区） |
+| 维度表达 | 权重着色 + 弧长 | 权重着色 + 弧长 + **clutch 关键时刻叠加** + **环上命中/出手数据标签** + **自适应背景层** |
 
-该脚本已完整落地「下沉图」特性：
+### ✨ 2026-08-03 重设计要点
 
-- **固定角度扇形**：每名球员占固定 45° 扇区，扇区间留 5° 间隙，剩余角度在左上形成大留白标签区；
-- **左侧线对齐填充**：每环弧长从扇区左边缘起，按「该球员此距离带出手 ÷ 全队该距离最高者」（真实倍数、不压缩）展开；
-- **bi-proportional 环厚**：径向厚度按全队该距离带真实出手占比分配（篮下最厚、长中距最薄）；
-- **clutch 叠加**：黄色环叠加在楔形左缘，表示关键时刻（`is_clutch`，最后 5 秒）出手；
-- **数据标签**：环上白字 = 命中数/出手数（整体命中率），正下方黄字 = 关键时刻 命中/出手；
-- **中心球员数据块**：排名 + 各距离带出手明细；图例为沉入背景的无框文字条。
+- **全局动态角度比例（GLOBAL DYNAMIC ANGLE RATIO）**：300° 数据弧按 Top-N 球员真实出手量严格比例分配，不再用固定 45° 槽位；
+- **跨球员真实占比（CROSS-PLAYER FAITHFULNESS）**：同一距离环内，楔形弧长 = 其该带真实出手占比（同带内 peer-relative），跨球员可比；
+- **30 队主题色（TEAM THEME COLORS）**：仅应用于 UI 外框（主/副色），4 态数据编码（命中/失手 × 常规/关键）保持恒定以保证跨队可比；
+- **自适应背景层（ADAPTIVE BACKGROUND）**：通过 `--bg` 切换
+  - `portrait`：球员灰度头像按扇区遮罩（默认）
+  - `logo`：球队 logo 按扇区遮罩
+  - `heatmap`：按区 FG% 热力色（蓝→黄→红）
+  - `grid`：球队副色极简径向网格
+- **5/6/7 人自适应布局**，顶部预留 60° 缺口放距离环标签。
+
+### 🗂️ 四个变体 (`star-templates/`)
+
+仓库内置 4 个开箱即用的背景变体模板，各自把 `--bg` 默认值写死，运行即生成同名 HTML：
+
+| 模板 | 背景模式 | 预览 |
+| --- | --- | --- |
+| `star_grid.py` | `grid`（极简径向网格） | [star_grid_preview.html](star-templates/star_grid_preview.html) |
+| `star_heatmap.py` | `heatmap`（FG% 热力） | [star_heatmap_preview.html](star-templates/star_heatmap_preview.html) |
+| `star_logo.py` | `logo`（球队 logo 遮罩） | [star_logo_preview.html](star-templates/star_logo_preview.html) |
+| `star_portrait.py` | `portrait`（球员灰度头像） | [star_portrait_preview.html](star-templates/star_portrait_preview.html) |
+
+> 注：预览为静态 HTML 示例（已提交）。运行脚本默认输出 `<脚本名>.html`（如 `star_grid.html`），该生成物已在 `.gitignore` 忽略。
 
 ### 依赖与配置
 
@@ -84,13 +102,17 @@ DB_PASSWORD=your_password
 ```
 
 数据表需含 `fct_pbp_shots(season, team, player_slug, shot_distance, is_make, is_clutch)`。
+本地资源目录（头像/logo）见脚本内 `HEADSHOT_DIR` / `LOGO_DIR`。
 
 ### 用法
 
 ```bash
-python team_shot_radial.py 2025 BOS 5
-# 参数: <赛季> <球队三字码> <Top N 球员>
-# 输出: team_shot_radial.html (本地浏览器打开, 可切换赛季 / 球队 / 人数)
+# CLI 入口 (team_shot_radial.py): <赛季> <球队三字码> <Top N> [bg] [输出路径]
+python team_shot_radial.py 2025 BOS 5 portrait
+# 等价于直接跑某一变体:
+python star-templates/star_portrait.py 2025 BOS 5   # 默认 portrait 背景
+python star-templates/star_grid.py 2025 OKC 7        # 默认 grid 背景, 支持 7 人
+# 输出: 同名 .html (本地浏览器打开, 可切换赛季 / 球队 / 人数 / 背景)
 ```
 
 ---
@@ -101,7 +123,12 @@ python team_shot_radial.py 2025 BOS 5
 multilayer-weighted-polar-chart/
 ├── multilayer_polar.py        # 通用库: plot_multilayer_polar_map (支持 align_mode='left'|'center')
 ├── example.py                 # 通用库使用示例
-├── team_shot_radial.py        # 真实应用: NBA 出手分布 (DB 驱动, SVG/HTML 输出)
+├── team_shot_radial.py        # 星环图 CLI 入口 (NBA 出手分布, DB 驱动, SVG/HTML)
+├── star-templates/            # 星环图四个背景变体模板 (+ 各自 _preview.html 示例)
+│   ├── star_grid.py           #   bg=grid     极简径向网格
+│   ├── star_heatmap.py        #   bg=heatmap  FG% 热力
+│   ├── star_logo.py           #   bg=logo     球队 logo 遮罩
+│   └── star_portrait.py       #   bg=portrait 球员灰度头像 (默认)
 ├── README.md
 ├── LICENSE                    # MIT (Deo Cheng, 2026)
 ├── .gitignore

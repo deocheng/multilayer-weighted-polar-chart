@@ -20,3 +20,9 @@ output.png
 
 # Generated HTML output (team_shot_radial.py -> team_shot_radial.html)
 team_shot_radial.html
+
+# Generated HTML output from star-templates/ (keep *_preview.html as examples)
+star-templates/star_grid.html
+star-templates/star_heatmap.html
+star-templates/star_logo.html
+star-templates/star_portrait.html
